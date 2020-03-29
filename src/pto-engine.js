@@ -33,6 +33,7 @@ class PTOEngine {
       start: fromDate,
       end: toDate,
     }).filter(isAccrual(options));
+
     const total = start + accruals.length * amount;
 
     return Math.min(total, cap);

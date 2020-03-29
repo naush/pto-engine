@@ -96,12 +96,12 @@ describe('PTOEngine', () => {
       });
     });
 
-    describe('fortnightly', () => {
-      it('accrues on the first day', () => {
+    describe('biweekly', () => {
+      it('accrues on the first day for a year', () => {
         const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 0, 31);
+        const to = new Date(2019, 11, 31);
         const amount = 1;
-        const period = 'fortnightly';
+        const period = 'biweekly';
         const accrualDate = 1;
 
         expect(PTOEngine.calculate({
@@ -110,7 +110,57 @@ describe('PTOEngine', () => {
           amount,
           period,
           accrualDate,
-        })).toEqual(2);
+        })).toEqual(27);
+      });
+
+      it('accrues on the last day for a year', () => {
+        const from = new Date(2019, 0, 1);
+        const to = new Date(2019, 11, 31);
+        const amount = 1;
+        const period = 'biweekly';
+        const accrualDate = 14;
+
+        expect(PTOEngine.calculate({
+          from,
+          to,
+          amount,
+          period,
+          accrualDate,
+        })).toEqual(26);
+      });
+    });
+
+    describe('semimonthly', () => {
+      it('accrues on the first and 15th of each month for a year', () => {
+        const from = new Date(2019, 0, 1);
+        const to = new Date(2019, 11, 31);
+        const amount = 1;
+        const period = 'semimonthly';
+        const accrualDate = 1;
+
+        expect(PTOEngine.calculate({
+          from,
+          to,
+          amount,
+          period,
+          accrualDate,
+        })).toEqual(24);
+      });
+
+      it('accrues on the 15th and last day of each month for a year', () => {
+        const from = new Date(2019, 0, 1);
+        const to = new Date(2019, 11, 31);
+        const amount = 1;
+        const period = 'semimonthly';
+        const accrualDate = 15;
+
+        expect(PTOEngine.calculate({
+          from,
+          to,
+          amount,
+          period,
+          accrualDate,
+        })).toEqual(24);
       });
     });
 
