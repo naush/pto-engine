@@ -3,8 +3,8 @@ import isQualified from './is-qualified';
 export default (options) => (date) => {
   const {
     resetDate,
-    period,
+    resetPeriod,
   } = options;
 
-  return isQualified(Number(resetDate), period)(date);
+  return isQualified(Number(resetDate), resetPeriod)(date);
 };
