@@ -24,11 +24,16 @@ module.exports = (dayOfPeriod, period) => (date) => {
     return getDay(date) === dayOfPeriod;
   }
 
-  if (period === 'yearly' && onLastDayOfYear(dayOfPeriod)) {
+  if (period === 'fortnightly') {
+    return getDate(date) === dayOfPeriod
+      || getDate(date) === dayOfPeriod + 14;
+  }
+
+  if (period === 'annually' && onLastDayOfYear(dayOfPeriod)) {
     return isLastDayOfYear(date);
   }
 
-  if (period === 'yearly') {
+  if (period === 'annually') {
     return getDayOfYear(date) === dayOfPeriod;
   }
 

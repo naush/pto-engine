@@ -30,7 +30,7 @@ describe('PTOEngine', () => {
         const period = 'monthly';
         const accrualDate = 2;
         const resetDate = 1;
-        const resetPeriod = 'yearly';
+        const resetPeriod = 'annually';
 
         expect(PTOEngine.calculate({
           from,
@@ -44,12 +44,12 @@ describe('PTOEngine', () => {
       });
     });
 
-    describe('yearly', () => {
+    describe('annually', () => {
       it('accrues on the first day of the year', () => {
         const from = new Date(2019, 0, 1);
         const to = new Date(2020, 0, 1);
         const amount = 1;
-        const period = 'yearly';
+        const period = 'annually';
         const accrualDate = 1;
 
         expect(PTOEngine.calculate({
@@ -65,7 +65,7 @@ describe('PTOEngine', () => {
         const from = new Date(2020, 0, 1);
         const to = new Date(2020, 11, 30);
         const amount = 1;
-        const period = 'yearly';
+        const period = 'annually';
         const accrualDate = 365;
 
         expect(PTOEngine.calculate({
@@ -93,6 +93,24 @@ describe('PTOEngine', () => {
           period,
           accrualDate,
         })).toEqual(4);
+      });
+    });
+
+    describe('fortnightly', () => {
+      it('accrues on the first day', () => {
+        const from = new Date(2019, 0, 1);
+        const to = new Date(2019, 0, 31);
+        const amount = 1;
+        const period = 'fortnightly';
+        const accrualDate = 1;
+
+        expect(PTOEngine.calculate({
+          from,
+          to,
+          amount,
+          period,
+          accrualDate,
+        })).toEqual(2);
       });
     });
 
