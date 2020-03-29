@@ -1,0 +1,22 @@
+{
+  "name": "pto-engine",
+  "version": "0.0.1",
+  "description": "PTO calculation made easy.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/naush/pto-engine.git"
+  },
+  "keywords": [
+    "pto"
+  ],
+  "author": "naush",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/naush/pto-engine/issues"
+  },
+  "homepage": "https://github.com/naush/pto-engine#readme"
+}
