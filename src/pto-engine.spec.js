@@ -1,4 +1,4 @@
-const PTOEngine = require('./pto-engine');
+import PTOEngine from './pto-engine';
 
 describe('PTOEngine', () => {
   describe('calculate', () => {

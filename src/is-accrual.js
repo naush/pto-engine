@@ -1,6 +1,6 @@
-const isQualified = require('./is-qualified');
+import isQualified from './is-qualified';
 
-module.exports = (options) => (date) => {
+export default (options) => (date) => {
   const {
     accrualDate,
     period,

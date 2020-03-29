@@ -1,3 +1,3 @@
-const PTOEngine = require('./pto-engine');
+import PTOEngine from './pto-engine';
 
-module.exports = { PTOEngine };
+export default PTOEngine;

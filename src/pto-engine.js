@@ -1,7 +1,8 @@
-const isBefore = require('date-fns/isBefore');
-const eachDayOfInterval = require('date-fns/eachDayOfInterval');
-const isAccrual = require('./is-accrual');
-const isReset = require('./is-reset');
+import isBefore from 'date-fns/isBefore';
+import eachDayOfInterval from 'date-fns/eachDayOfInterval';
+
+import isAccrual from './is-accrual';
+import isReset from './is-reset';
 
 const DEFAULT_STARTING_BALANCE = 0;
 const DEFAULT_CAP = Number.MAX_VALUE;
@@ -38,4 +39,4 @@ class PTOEngine {
   }
 }
 
-module.exports = PTOEngine;
+export default PTOEngine;
