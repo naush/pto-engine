@@ -1,7 +1,95 @@
 import PTOEngine from './pto-engine';
 
 describe('PTOEngine', () => {
-  describe('calculate', () => {
+  describe('.calculate', () => {
+    describe('requests', () => {
+      it('subtracts used amount', () => {
+        const from = new Date(2019, 0, 1);
+        const to = new Date(2020, 0, 1);
+        const amount = 1;
+        const period = 'monthly';
+        const accrualDate = 31;
+        const requests = [
+          { from: new Date(2019, 1, 1), to: new Date(2019, 1, 1), used: 1 },
+        ];
+
+        expect(PTOEngine.calculate({
+          from,
+          to,
+          amount,
+          period,
+          accrualDate,
+          requests,
+        })).toEqual(11);
+      });
+
+      it('accrues again after taking time off', () => {
+        const from = new Date(2019, 0, 1);
+        const to = new Date(2020, 0, 1);
+        const amount = 1;
+        const period = 'monthly';
+        const accrualDate = 31;
+        const requests = [
+          { from: new Date(2019, 10, 1), to: new Date(2019, 10, 1), used: 5 },
+        ];
+        const cap = 5;
+
+        expect(PTOEngine.calculate({
+          from,
+          to,
+          amount,
+          period,
+          accrualDate,
+          requests,
+          cap,
+        })).toEqual(2);
+      });
+
+      it('accrues again only after the end of a time off request', () => {
+        const from = new Date(2019, 0, 1);
+        const to = new Date(2020, 0, 1);
+        const amount = 1;
+        const period = 'monthly';
+        const accrualDate = 31;
+        const requests = [
+          { from: new Date(2019, 10, 1), to: new Date(2019, 11, 30), used: 5 },
+        ];
+        const cap = 5;
+
+        expect(PTOEngine.calculate({
+          from,
+          to,
+          amount,
+          period,
+          accrualDate,
+          requests,
+          cap,
+        })).toEqual(1);
+      });
+
+      it('accrues again when time off ends on the same day as accrual day', () => {
+        const from = new Date(2019, 0, 1);
+        const to = new Date(2020, 0, 1);
+        const amount = 1;
+        const period = 'monthly';
+        const accrualDate = 31;
+        const requests = [
+          { from: new Date(2019, 10, 1), to: new Date(2019, 11, 31), used: 5 },
+        ];
+        const cap = 5;
+
+        expect(PTOEngine.calculate({
+          from,
+          to,
+          amount,
+          period,
+          accrualDate,
+          requests,
+          cap,
+        })).toEqual(1);
+      });
+    });
+
     describe('cap', () => {
       it('does not accrue more than the specified cap amount', () => {
         const from = new Date(2019, 0, 1);

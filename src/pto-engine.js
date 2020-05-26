@@ -1,4 +1,5 @@
 import isBefore from 'date-fns/isBefore';
+import isSameDay from 'date-fns/isSameDay';
 import eachDayOfInterval from 'date-fns/eachDayOfInterval';
 
 import isAccrual from './is-accrual';
@@ -14,6 +15,7 @@ class PTOEngine {
     const start = Number(options.start) || DEFAULT_STARTING_BALANCE;
     const amount = Number(options.amount);
     const cap = Number(options.cap) || DEFAULT_CAP;
+    let requests = options.requests || [];
 
     if (isBefore(toDate, fromDate)) {
       throw new Error('To date must be after From date');
@@ -34,9 +36,31 @@ class PTOEngine {
       end: toDate,
     }).filter(isAccrual(options));
 
-    const total = start + accruals.length * amount;
+    let total = start;
+    const transactions = [];
+    transactions.push({ type: 'start', amount: start });
 
-    return Math.min(total, cap);
+    accruals.forEach((accrual) => {
+      const isBeforeAccrual = (date) => isBefore(date, accrual) || isSameDay(date, accrual);
+      const usedRequests = requests.filter((request) => isBeforeAccrual(request.to));
+      const used = usedRequests.reduce((_total, request) => _total + request.used, 0);
+
+      if (used !== 0) {
+        total -= used;
+        transactions.push({ type: 'request', amount: -1 * used });
+      }
+
+      requests = requests.filter((request) => !(isBeforeAccrual(request.to)));
+
+      if (total + amount <= cap) {
+        total += amount;
+        transactions.push({ type: 'accrual', amount });
+      } else {
+        transactions.push({ type: 'accrual', amount: 0 });
+      }
+    });
+
+    return transactions.reduce((_total, transaction) => _total + transaction.amount, 0);
   }
 }
 
