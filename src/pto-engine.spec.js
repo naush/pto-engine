@@ -1,356 +1,271 @@
 import PTOEngine from './pto-engine';
 
-describe('PTOEngine', () => {
-  describe('.calculate', () => {
+describe(PTOEngine, () => {
+  describe('#history', () => {
+    it('delegates to Events', () => {
+      const options = {
+        from: new Date(2019, 0, 1),
+        to: new Date(2020, 0, 1),
+        amount: 1,
+        period: 'monthly',
+        accrualDate: 31,
+      };
+      const FakeEvents = { create: jest.fn() };
+      const engine = new PTOEngine(options, FakeEvents);
+
+      engine.history();
+
+      expect(FakeEvents.create).toHaveBeenCalledWith(options);
+    });
+  });
+
+  describe('#balance with validations', () => {
+    it('ensures that to date is after from date', () => {
+      const options = {
+        from: new Date(2019, 0, 2),
+        to: new Date(2019, 0, 1),
+        amount: 1,
+        period: 'monthly',
+        accrualDate: 31,
+      };
+
+      expect(() => {
+        new PTOEngine(options).balance();
+      }).toThrow(/date/);
+    });
+  });
+
+  describe('#balance', () => {
+    let options;
+    let expected;
+
+    beforeEach(() => {
+      options = {
+        from: new Date(2019, 0, 1),
+        to: new Date(2020, 0, 1),
+        amount: 1,
+        period: 'monthly',
+        accrualDate: 31,
+      };
+    });
+
+    afterEach(() => {
+      expect(new PTOEngine(options).balance()).toEqual(expected);
+    });
+
     describe('requests', () => {
       it('subtracts used amount', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2020, 0, 1);
-        const amount = 1;
-        const period = 'monthly';
-        const accrualDate = 31;
-        const requests = [
-          { from: new Date(2019, 1, 1), to: new Date(2019, 1, 1), used: 1 },
-        ];
+        options = {
+          ...options,
+          requests: [
+            { from: new Date(2019, 1, 1), to: new Date(2019, 1, 1), used: 1 },
+          ],
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-          requests,
-        })).toEqual(11);
+        expected = 11;
       });
 
       it('accrues again after taking time off', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2020, 0, 1);
-        const amount = 1;
-        const period = 'monthly';
-        const accrualDate = 31;
-        const requests = [
-          { from: new Date(2019, 10, 1), to: new Date(2019, 10, 1), used: 5 },
-        ];
-        const cap = 5;
+        options = {
+          ...options,
+          requests: [
+            { from: new Date(2019, 10, 1), to: new Date(2019, 10, 1), used: 5 },
+          ],
+          cap: 5,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-          requests,
-          cap,
-        })).toEqual(2);
+        expected = 2;
       });
 
       it('accrues again only after the end of a time off request', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2020, 0, 1);
-        const amount = 1;
-        const period = 'monthly';
-        const accrualDate = 31;
-        const requests = [
-          { from: new Date(2019, 10, 1), to: new Date(2019, 11, 30), used: 5 },
-        ];
-        const cap = 5;
+        options = {
+          ...options,
+          requests: [
+            { from: new Date(2019, 10, 1), to: new Date(2019, 11, 30), used: 5 },
+          ],
+          cap: 5,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-          requests,
-          cap,
-        })).toEqual(1);
+        expected = 1;
       });
 
       it('accrues again when time off ends on the same day as accrual day', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2020, 0, 1);
-        const amount = 1;
-        const period = 'monthly';
-        const accrualDate = 31;
-        const requests = [
-          { from: new Date(2019, 10, 1), to: new Date(2019, 11, 31), used: 5 },
-        ];
-        const cap = 5;
+        options = {
+          ...options,
+          requests: [
+            { from: new Date(2019, 10, 1), to: new Date(2019, 11, 31), used: 5 },
+          ],
+          cap: 5,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-          requests,
-          cap,
-        })).toEqual(1);
+        expected = 1;
       });
     });
 
     describe('cap', () => {
       it('does not accrue more than the specified cap amount', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2020, 0, 1);
-        const amount = 1;
-        const period = 'monthly';
-        const accrualDate = 31;
-        const cap = 10;
+        options = {
+          ...options,
+          cap: 10,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          cap,
-          period,
-          accrualDate,
-        })).toEqual(10);
+        expected = 10;
       });
     });
 
     describe('resets', () => {
       it('resets balance on the first day of the year', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2020, 0, 1);
-        const amount = 1;
-        const period = 'monthly';
-        const accrualDate = 2;
-        const resetDate = 1;
-        const resetPeriod = 'annually';
+        options = {
+          ...options,
+          resetDate: 1,
+          resetPeriod: 'annually',
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-          resetDate,
-          resetPeriod,
-        })).toEqual(0);
+        expected = 0;
       });
     });
 
     describe('annually', () => {
       it('accrues on the first day of the year', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2020, 0, 1);
-        const amount = 1;
-        const period = 'annually';
-        const accrualDate = 1;
+        options = {
+          ...options,
+          period: 'annually',
+          accrualDate: 1,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(2);
+        expected = 2;
       });
 
       it('accrues on the last day of a leap year', () => {
-        const from = new Date(2020, 0, 1);
-        const to = new Date(2020, 11, 30);
-        const amount = 1;
-        const period = 'annually';
-        const accrualDate = 365;
+        options = {
+          ...options,
+          from: new Date(2020, 0, 1),
+          to: new Date(2020, 11, 30),
+          amount: 1,
+          period: 'annually',
+          accrualDate: 365,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(0);
+        expected = 0;
       });
     });
 
     describe('weekly', () => {
       it('accrues on the first day of the week', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 1, 1);
-        const amount = 1;
-        const period = 'weekly';
-        const accrualDate = 1;
+        options = {
+          ...options,
+          from: new Date(2019, 0, 1),
+          to: new Date(2019, 1, 1),
+          amount: 1,
+          period: 'weekly',
+          accrualDate: 1,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(4);
+        expected = 4;
       });
     });
 
     describe('biweekly', () => {
       it('accrues on the first day for a year', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 11, 31);
-        const amount = 1;
-        const period = 'biweekly';
-        const accrualDate = 1;
+        options = {
+          ...options,
+          to: new Date(2019, 11, 31),
+          period: 'biweekly',
+          accrualDate: 1,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(27);
+        expected = 27;
       });
 
       it('accrues on the last day for a year', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 11, 31);
-        const amount = 1;
-        const period = 'biweekly';
-        const accrualDate = 14;
+        options = {
+          ...options,
+          to: new Date(2019, 11, 31),
+          period: 'biweekly',
+          accrualDate: 14,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(26);
+        expected = 26;
       });
     });
 
     describe('semimonthly', () => {
       it('accrues on the first and 15th of each month for a year', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 11, 31);
-        const amount = 1;
-        const period = 'semimonthly';
-        const accrualDate = 1;
+        options = {
+          ...options,
+          to: new Date(2019, 11, 31),
+          period: 'semimonthly',
+          accrualDate: 1,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(24);
+        expected = 24;
       });
 
       it('accrues on the 15th and last day of each month for a year', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 11, 31);
-        const amount = 1;
-        const period = 'semimonthly';
-        const accrualDate = 15;
+        options = {
+          ...options,
+          to: new Date(2019, 11, 31),
+          amount: 1,
+          period: 'semimonthly',
+          accrualDate: 15,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(24);
+        expected = 24;
       });
     });
 
     describe('monthly', () => {
       it('accrues on the first day of the month', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 1, 1);
-        const amount = 1;
-        const period = 'monthly';
-        const accrualDate = 1;
+        options = {
+          ...options,
+          to: new Date(2019, 1, 1),
+          accrualDate: 1,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(2);
+        expected = 2;
       });
 
       it('accrues on the second day of the month', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 1, 1);
-        const amount = 1;
-        const period = 'monthly';
-        const accrualDate = 2;
+        options = {
+          ...options,
+          to: new Date(2019, 1, 1),
+          accrualDate: 2,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(1);
+        expected = 1;
       });
 
       it('accrues on the last day of the month', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 1, 28);
-        const amount = 1;
-        const period = 'monthly';
-        const accrualDate = 31;
+        options = {
+          ...options,
+          to: new Date(2019, 1, 28),
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(2);
-      });
-
-      it('ensures that to date is after from date', () => {
-        const from = new Date(2019, 9, 2);
-        const to = new Date(2019, 9, 1);
-        const amount = 8;
-        const period = 'monthly';
-        const accrualDate = 1;
-
-        expect(() => {
-          PTOEngine.calculate({
-            from,
-            to,
-            amount,
-            period,
-            accrualDate,
-          });
-        }).toThrow(/date/);
+        expected = 2;
       });
 
       it('multiplies difference in months with given amount', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 10, 1);
-        const amount = 8;
-        const period = 'monthly';
-        const accrualDate = 1;
+        options = {
+          ...options,
+          to: new Date(2019, 10, 1),
+          amount: 8,
+          period: 'monthly',
+          accrualDate: 1,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          accrualDate,
-        })).toEqual(88);
+        expected = 88;
       });
 
       it('includes starting balance', () => {
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 10, 1);
-        const amount = 8;
-        const period = 'monthly';
-        const start = 12;
-        const accrualDate = 1;
+        options = {
+          ...options,
+          to: new Date(2019, 10, 1),
+          amount: 8,
+          accrualDate: 1,
+          start: 12,
+        };
 
-        expect(PTOEngine.calculate({
-          from,
-          to,
-          amount,
-          period,
-          start,
-          accrualDate,
-        })).toEqual(100);
+        expected = 100;
       });
     });
   });
