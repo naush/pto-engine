@@ -3,13 +3,18 @@ import eachDayOfInterval from 'date-fns/eachDayOfInterval';
 
 import isAccrual from './is-accrual';
 import isReset from './is-reset';
-import sorter from './sorter';
+import compareEvent from './compare-event';
+
+import StartEvent from './events/start-event';
+import RequestEvent from './events/request-event';
+import ResetEvent from './events/reset-event';
+import AccrualEvent from './events/accrual-event';
 
 class Events {
-  static range(start, end, options, filterFunc, type) {
+  static range(start, end, options, filterFunc, EventClass) {
     return eachDayOfInterval({ start, end })
       .filter(filterFunc(options))
-      .map((date) => ({ type, date }));
+      .map((date) => new EventClass({ ...options, date }));
   }
 
   static create(options) {
@@ -20,52 +25,18 @@ class Events {
       throw new Error('To date must be after From date');
     }
 
-    let balance = Number(options.start) || 0;
-    const amount = Number(options.amount);
-    const cap = Number(options.cap) || Number.MAX_VALUE;
     const requests = options.requests || [];
     const events = [
-      {
-        type: 'start', date: fromDate, amount: balance, balance,
-      },
-      ...this.range(fromDate, toDate, options, isReset, 'reset'),
-      ...this.range(fromDate, toDate, options, isAccrual, 'accrual'),
-      ...requests.map((request) => ({
-        type: 'request', date: request.to, amount: request.used,
-      })),
+      new StartEvent(options),
+      ...this.range(fromDate, toDate, options, isReset, ResetEvent),
+      ...this.range(fromDate, toDate, options, isAccrual, AccrualEvent),
+      ...requests.map((request) => new RequestEvent({ request })),
     ];
 
-    let diff = 0;
-
-    return events.sort(sorter).map((event) => {
-      switch (event.type) {
-        case 'start':
-          return {
-            ...event,
-            balance,
-          };
-        case 'request':
-          balance -= event.amount;
-          return {
-            ...event,
-            balance,
-          };
-        case 'accrual':
-          diff = balance + amount <= cap ? amount : 0;
-          balance += diff;
-          return {
-            ...event,
-            amount: diff,
-            balance,
-          };
-        default: // reset
-          balance = 0;
-          return {
-            ...event,
-            amount: 0,
-            balance,
-          };
-      }
+    let balance = 0;
+    return events.sort(compareEvent).map((event) => {
+      balance = event.update(balance);
+      return event.create();
     });
   }
 }
