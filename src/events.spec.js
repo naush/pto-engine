@@ -55,7 +55,9 @@ describe(Events, () => {
         ...options,
         start: 1,
         requests: [
-          { from: new Date(2019, 0, 1), to: new Date(2019, 0, 15), used: 1 },
+          {
+            from: new Date(2019, 0, 1), to: new Date(2019, 0, 15), used: 1,
+          },
         ],
       };
 
@@ -64,7 +66,13 @@ describe(Events, () => {
           type: 'start', date: new Date(2019, 0, 1), amount: 1, balance: 1,
         },
         {
-          type: 'request', date: new Date(2019, 0, 15), amount: 1, balance: 0,
+          type: 'request',
+          date: new Date(2019, 0, 15),
+          amount: 1,
+          balance: 0,
+          from: new Date(2019, 0, 1),
+          to: new Date(2019, 0, 15),
+          used: 1,
         },
         {
           type: 'accrual', date: new Date(2019, 0, 31), amount: 1, balance: 1,
