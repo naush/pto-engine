@@ -166,23 +166,25 @@ describe(PTOEngine, () => {
     });
 
     describe('biweekly', () => {
-      it('accrues on the first day for a year', () => {
+      it('accrues 53 Tuesdays', () => {
         options = {
           ...options,
+          from: new Date(2019, 0, 1),
           to: new Date(2019, 11, 31),
           period: 'biweekly',
-          accrualDate: 1,
+          accrualDate: 2,
         };
 
         expected = 27;
       });
 
-      it('accrues on the last day for a year', () => {
+      it('accrues 52 sundays', () => {
         options = {
           ...options,
+          from: new Date(2019, 0, 1),
           to: new Date(2019, 11, 31),
           period: 'biweekly',
-          accrualDate: 14,
+          accrualDate: 13,
         };
 
         expected = 26;

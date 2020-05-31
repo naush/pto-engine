@@ -1,8 +1,12 @@
 import getDate from 'date-fns/getDate';
 import getDay from 'date-fns/getDay';
 import getDayOfYear from 'date-fns/getDayOfYear';
+import startOfYear from 'date-fns/startOfYear';
 import isLastDayOfMonth from 'date-fns/isLastDayOfMonth';
+import isAfter from 'date-fns/isAfter';
+import isSameDay from 'date-fns/isSameDay';
 import lastDayOfYear from 'date-fns/lastDayOfYear';
+import eachWeekOfInterval from 'date-fns/eachWeekOfInterval';
 
 const LAST_DAY_OF_MONTH = 31;
 const LAST_DAY_OF_SEMIMONTH = 15;
@@ -37,7 +41,17 @@ export default (dayOfPeriod, period) => (date) => {
   }
 
   if (period === 'biweekly') {
-    return getDayOfYear(date) % 14 === (dayOfPeriod === 14 ? 0 : dayOfPeriod);
+    const start = startOfYear(date);
+    const dayOfWeek = getDay(date);
+    const weeks = eachWeekOfInterval(
+      { start, end: date },
+      { weekStartsOn: dayOfPeriod % 7 },
+    ).filter((day) => (isSameDay(day, start) || isAfter(day, start)));
+
+    if (weeks.length > 0 && weeks.length % 2 === 0) {
+      return dayOfWeek + 7 === dayOfPeriod;
+    }
+    return dayOfWeek === dayOfPeriod;
   }
 
   if (period === 'annually' && onLastDayOfYear(dayOfPeriod)) {
