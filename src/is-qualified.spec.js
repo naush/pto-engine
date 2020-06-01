@@ -1,6 +1,20 @@
 import isQualified from './is-qualified';
 
 describe(isQualified, () => {
+  describe('annually', () => {
+    it('handles non-leap year', () => {
+      const date = new Date(2020, 11, 31);
+
+      expect(isQualified(365, 'annually')(date)).toEqual(true);
+    });
+
+    it('handles leap year', () => {
+      const date = new Date(2019, 11, 31);
+
+      expect(isQualified(365, 'annually')(date)).toEqual(true);
+    });
+  });
+
   describe('biweekly', () => {
     it('qualifies the first monday', () => {
       const date = new Date(2020, 0, 6);

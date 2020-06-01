@@ -12,7 +12,7 @@ const LAST_DAY_OF_MONTH = 31;
 const LAST_DAY_OF_SEMIMONTH = 15;
 const LAST_DAY_OF_YEAR = 365;
 
-const isLastDayOfYear = (date) => lastDayOfYear(date) === date;
+const isLastDayOfYear = (date) => isSameDay(lastDayOfYear(date), date);
 const onLastDayOfMonth = (date) => date === LAST_DAY_OF_MONTH;
 const onLastDayOfSemiMonth = (date) => date === LAST_DAY_OF_SEMIMONTH;
 const onLastDayOfYear = (date) => date === LAST_DAY_OF_YEAR;
