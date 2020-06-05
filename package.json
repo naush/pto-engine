@@ -1,6 +1,6 @@
 {
   "name": "pto-engine",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "PTO calculation made easy.",
   "main": "src/index.js",
   "type": "module",
