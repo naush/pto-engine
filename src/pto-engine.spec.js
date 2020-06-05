@@ -111,6 +111,18 @@ describe(PTOEngine, () => {
 
         expected = 10;
       });
+
+      it('allows partial accrual', () => {
+        options = {
+          ...options,
+          amount: 2,
+          period: 'monthly',
+          accrualDate: 31,
+          cap: 23,
+        };
+
+        expected = 23;
+      });
     });
 
     describe('resets', () => {
