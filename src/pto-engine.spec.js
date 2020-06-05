@@ -125,6 +125,30 @@ describe(PTOEngine, () => {
       });
     });
 
+    describe('carryover', () => {
+      it('allows remaining balance to carryover', () => {
+        options = {
+          ...options,
+          resetDate: 1,
+          resetPeriod: 'annually',
+          carryover: 20,
+        };
+
+        expected = 12;
+      });
+
+      it('does not exceed carryover amount', () => {
+        options = {
+          ...options,
+          resetDate: 1,
+          resetPeriod: 'annually',
+          carryover: 3,
+        };
+
+        expected = 3;
+      });
+    });
+
     describe('annually', () => {
       it('accrues on the first day of the year', () => {
         options = {
