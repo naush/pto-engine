@@ -11,7 +11,7 @@ describe(isQualified, () => {
     it('handles leap year', () => {
       const date = new Date(2019, 11, 31);
 
-      expect(isQualified(365, 'annually')(date)).toEqual(true);
+      expect(isQualified(366, 'annually')(date)).toEqual(true);
     });
   });
 

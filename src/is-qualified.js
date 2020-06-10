@@ -10,12 +10,12 @@ import eachWeekOfInterval from 'date-fns/eachWeekOfInterval';
 
 const LAST_DAY_OF_MONTH = 31;
 const LAST_DAY_OF_SEMIMONTH = 15;
-const LAST_DAY_OF_YEAR = 365;
+const LAST_DAYS_OF_YEAR = [365, 366];
 
 const isLastDayOfYear = (date) => isSameDay(lastDayOfYear(date), date);
 const onLastDayOfMonth = (date) => date === LAST_DAY_OF_MONTH;
 const onLastDayOfSemiMonth = (date) => date === LAST_DAY_OF_SEMIMONTH;
-const onLastDayOfYear = (date) => date === LAST_DAY_OF_YEAR;
+const onLastDayOfYear = (date) => LAST_DAYS_OF_YEAR.includes(date);
 
 export default (dayOfPeriod, period) => (date) => {
   if (period === 'monthly' && onLastDayOfMonth(dayOfPeriod)) {
